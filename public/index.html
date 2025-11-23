@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Submit Request</title></head>
+<body>
+<h2>Send Request</h2>
+<form id="f">
+  <input name="name" placeholder="Your name" required><br>
+  <input name="email" placeholder="Your email" required><br>
+  <select name="purpose">
+    <option>Question</option>
+    <option>Appointment</option>
+    <option>Chat Request</option>
+  </select><br>
+  <input name="referral" placeholder="Referral Code"><br>
+  <textarea name="message" placeholder="Message" required></textarea><br>
+  <button>Submit</button>
+</form>
+
+<script>
+document.getElementById('f').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const o = Object.fromEntries(new FormData(e.target).entries());
+  const r = await fetch('/api/request', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(o)
+  });
+  const j = await r.json();
+  if(j.ok){
+    location.href = j.statusUrl;
+  } else {
+    alert(j.error)
+  }
+});
+</script>
+</body>
+</html>
