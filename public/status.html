@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Status</title></head>
+<body>
+<div id="out">Loading...</div>
+<script>
+const token = new URLSearchParams(location.search).get('token');
+async function load(){
+  const r = await fetch('/api/status?token=' + token);
+  const j = await r.json();
+  if(j.error){ out.innerText = j.error; return; }
+  out.innerHTML = `
+    Token: ${j.token}<br>
+    Name: ${j.name}<br>
+    Purpose:${j.purpose}<br>
+    Status: ${j.status}<br>
+    Labels:${j.labels.join(', ')}<br>
+    <pre>${j.body}</pre>
+  `;
+}
+load();
+</script>
+</body>
+</html>
