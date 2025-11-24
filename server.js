@@ -6,7 +6,8 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const { Octokit } = require('@octokit/rest');
 const nodemailer = require('nodemailer');
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./db.sqlite');
 const path = require('path');
 
 const app = express();
