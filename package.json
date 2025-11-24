@@ -1,17 +1,17 @@
 {
   "name": "vj-gateway",
   "version": "1.0.0",
-  "description": "VJ Gateway - Request to GitHub Issue Management System",
+  "description": "Requesthub - VJ Gateway (Brevo transactional emails)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "@octokit/rest": "^19.0.0",
+    "sib-api-v3-sdk": "^8.0.0",
     "sqlite3": "^5.1.6",
     "body-parser": "^1.20.2",
     "dotenv": "^16.1.4",
-    "express": "^4.18.2",
-    "nodemailer": "^6.9.4"
+    "express": "^4.18.2"
   }
 }
