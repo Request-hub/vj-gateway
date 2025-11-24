@@ -1,35 +1,41 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Submit Request</title></head>
-<body>
-<h2>Send Request</h2>
+<head><meta charset="utf-8"><title>VJ Gateway — Submit Request</title></head>
+<body style="font-family:system-ui,arial;padding:20px;max-width:720px">
+<h1>Send a request</h1>
 <form id="f">
-  <input name="name" placeholder="Your name" required><br>
-  <input name="email" placeholder="Your email" required><br>
-  <select name="purpose">
-    <option>Question</option>
-    <option>Appointment</option>
-    <option>Chat Request</option>
-  </select><br>
-  <input name="referral" placeholder="Referral Code"><br>
-  <textarea name="message" placeholder="Message" required></textarea><br>
-  <button>Submit</button>
+  <div><input name="name" placeholder="Your name" required style="width:100%"></div><br>
+  <div><input name="email" placeholder="Email" required style="width:100%"></div><br>
+  <div>
+    <select name="purpose" style="width:100%">
+      <option>Question</option>
+      <option>Appointment</option>
+      <option>Chat request</option>
+      <option>Other</option>
+    </select>
+  </div><br>
+  <div><input name="referral" placeholder="Referral code (optional)" style="width:100%"></div><br>
+  <div><textarea name="message" placeholder="Write your message" required style="width:100%;height:140px"></textarea></div><br>
+  <button>Send Request</button>
 </form>
 
 <script>
-document.getElementById('f').addEventListener('submit', async (e)=>{
+const form = document.getElementById('f');
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const o = Object.fromEntries(new FormData(e.target).entries());
-  const r = await fetch('/api/request', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(o)
+  const o = Object.fromEntries(new FormData(form).entries());
+  const res = await fetch('/api/request', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(o)
   });
-  const j = await r.json();
-  if(j.ok){
-    location.href = j.statusUrl;
+  const j = await res.json();
+  if (j.ok) {
+    alert('Request sent! Your token: ' + j.token + '\nOpening status page now.');
+    window.location.href = j.statusUrl;
   } else {
-    alert(j.error)
+    alert('Error: ' + (j.error || 'unknown'));
+    console.error(j);
   }
 });
 </script>
