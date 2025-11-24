@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 const db = new Database('db.sqlite');
-db.prepare(`CREATE TABLE IF NOT EXISTS requests (
+db.run(`CREATE TABLE IF NOT EXISTS requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   token TEXT UNIQUE,
   name TEXT,
@@ -26,7 +26,8 @@ db.prepare(`CREATE TABLE IF NOT EXISTS requests (
   issue_number INTEGER,
   status TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`).run();
+);`);
+
 
 db.prepare(`CREATE TABLE IF NOT EXISTS referrals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
