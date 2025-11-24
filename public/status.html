@@ -1,38 +1,30 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><title>VJ Gateway — Status</title></head>
-<body style="font-family:system-ui,arial;padding:20px;max-width:720px">
-<div id="out">Loading…</div>
+<head><meta charset="utf-8"><title>Requesthub — Status</title></head>
+<body style="font-family:system-ui, Arial; padding:20px; max-width:720px;">
+<div id="out">Loading...</div>
 <script>
-const params = new URLSearchParams(location.search);
-const token = params.get('token');
-async function show(msg){ document.getElementById('out').innerHTML = msg; }
-if (!token) {
-  show('No token provided. Check your email link.');
-} else {
-  async function loadStatus() {
+const token = new URLSearchParams(location.search).get('token');
+const out = document.getElementById('out');
+if (!token) out.innerText = 'No token provided.';
+else {
+  async function load(){
     const r = await fetch('/api/status?token=' + encodeURIComponent(token));
     const j = await r.json();
-    if (j.error) { show('<b>Error:</b> ' + j.error); return; }
-    const labels = (j.labels || []).join(', ');
-    show(`
-      <h2>Request status</h2>
+    if (j.error) { out.innerText = 'Error: ' + j.error; return; }
+    out.innerHTML = `<h2>Request status</h2>
       <b>Token:</b> ${j.token}<br>
       <b>Name:</b> ${j.name}<br>
       <b>Purpose:</b> ${j.purpose}<br>
       <b>Status:</b> ${j.status}<br>
-      <b>Labels:</b> ${labels}<br>
-      <h3>Message</h3>
-      <pre>${j.body}</pre>
-    `);
+      <b>Labels:</b> ${ (j.labels||[]).join(', ') }<br>
+      <h3>Message</h3><pre>${j.body}</pre>`;
   }
-  await loadStatus();
-
-  const evtSource = new EventSource('/events');
-  evtSource.onmessage = (e) => {
+  load();
+  const es = new EventSource('/events');
+  es.onmessage = e => {
     const msg = JSON.parse(e.data);
-    if (msg.type === 'status_update' && msg.token === token) loadStatus();
-    if (msg.type === 'comment' && msg.token === token) loadStatus();
+    if ((msg.type === 'status_update' && msg.token === token) || (msg.type === 'comment' && msg.token === token)) load();
   };
 }
 </script>
