@@ -158,62 +158,49 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp
   const lastStatus = qs('#lastStatus');
   const eventsBox = qs('#eventsBox');
   const openStatus = qs('#openStatus');
-  const submitBtn = qs('#submitBtn');
-  const btnText = qs('#btnText');
-  const btnSpinner = qs('#btnSpinner');
-
-  let isSending = false;
-  function setLoading(v){ isSending = !!v; submitBtn.disabled = !!v; btnSpinner.classList.toggle('hidden', !v); btnText.style.opacity = v?0.6:1 }
 
   function showMsg(html, kind){ result.innerHTML = '<div class="'+(kind==='ok'?'success':'error')+'">'+html+'</div>'; }
+
+  // button + spinner control
+  const submitBtn = qs('#submitBtn');
+  const btnText = document.getElementById('btnText') || null;
+  const btnSpinner = document.getElementById('btnSpinner') || null;
+  let isSending = false;
+  function setLoading(v){
+    isSending = !!v;
+    if(submitBtn) submitBtn.disabled = !!v;
+    if(btnSpinner) btnSpinner.classList.toggle('hidden', !v);
+    if(btnText) btnText.style.opacity = v?0.6:1;
+  }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     if(isSending) return;
     result.innerHTML = '';
-    const data = {
-      name: form.name.value.trim(),
-      email: form.email.value.trim(),
-      purpose: form.purpose.value,
-      message: form.message.value.trim(),
-      referral: form.referral.value.trim() || undefined
-    };
-    // Simple validation
-    if(!data.name || !data.email || !data.purpose || !data.message){ showMsg('Please fill all required fields','err'); return; }
+    const data = { name: form.name.value.trim(), email: form.email.value.trim(), purpose: form.purpose.value, message: form.message.value.trim(), referral: form.referral.value.trim() || undefined };
+    if(!data.name||!data.email||!data.purpose||!data.message){ showMsg('Please fill all required fields','err'); return; }
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)){ showMsg('Enter a valid email address','err'); return; }
-
     try{
       setLoading(true);
       const res = await fetch('/api/request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
       const j = await res.json().catch(()=>({ error:'invalid-json-response' }));
-      if(res.ok && j.ok){
-        const token = escapeHtml(j.token);
-        showMsg('<strong>Request created</strong><br/>Token: <span class="token">'+token+'</span>','ok');
-        lastToken.textContent = token; lastStatus.textContent = 'received';
-        const statusUrl = j.statusUrl || ('/status.html?token='+encodeURIComponent(token));
-        openStatus.href = statusUrl; openStatus.style.display = 'inline-block';
-        // save email for convenience
-        try{ localStorage.setItem('rhub_email', data.email) }catch(e){}
-        form.reset();
-      } else {
-        const err = j && j.error ? j.error : ('HTTP '+res.status);
-        showMsg('Error: '+escapeHtml(err),'err');
-      }
-    }catch(err){ console.error(err); showMsg('Network or server error. Check console/logs.','err'); }
+      if(res.ok && j.ok){ showMsg('<strong>Request created</strong><br/>Token: <span class="token">'+escapeHtml(j.token)+'</span>','ok'); lastToken.textContent = j.token; lastStatus.textContent = 'received'; openStatus.href = j.statusUrl; openStatus.style.display = 'inline-block'; result.scrollIntoView({behavior:'smooth',block:'center'}); try{ localStorage.setItem('rhub_email', data.email) }catch(e){}; form.reset(); }
+      else showMsg('Error: '+escapeHtml(j.error||('HTTP '+res.status)),'err');
+    }catch(err){ console.error(err); showMsg('Network or server error. Check logs.','err'); }
     finally{ setLoading(false); }
   });
 
   // Restore email
   try{ const saved = localStorage.getItem('rhub_email'); if(saved) qs('#email').value = saved }catch(e){}
 
-  // SSE - live updates
+  // SSE
   try{
     const evt = new EventSource('/events');
     evt.onmessage = e => {
       try{
         const msg = JSON.parse(e.data);
         const time = new Date().toLocaleTimeString();
-        eventsBox.innerHTML = time + ' — ' + escapeHtml(msg.type + (msg.token?(' • ' + msg.token):'')) + '<br/>' + eventsBox.innerHTML;
+        eventsBox.innerHTML = time + ' — ' + escapeHtml(msg.type + (msg.token?(' • '+msg.token):'')) + '<br/>' + eventsBox.innerHTML;
         if(msg.type === 'status_update' && lastToken.textContent && msg.token === lastToken.textContent){ lastStatus.textContent = msg.new_status || 'updated'; }
         if(msg.type === 'comment' && msg.comment){ eventsBox.innerHTML = '<b>Comment:</b> '+escapeHtml(msg.comment.user)+': '+escapeHtml(msg.comment.body)+'<br/>'+eventsBox.innerHTML; }
       }catch(e){ console.warn('SSE parse', e); }
@@ -226,23 +213,23 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp
   const adminModal = qs('#adminModal');
   const closeAdmin = qs('#closeAdmin');
   const adminUpdate = qs('#adminUpdate');
-  adminBtn.addEventListener('click', ()=>{ adminModal.classList.remove('hidden'); adminModal.style.display = 'flex'; qs('#adminSecret').focus(); });
-  closeAdmin.addEventListener('click', ()=>{ adminModal.classList.add('hidden'); adminModal.style.display = 'none'; });
+  adminBtn.addEventListener('click', ()=> adminModal.style.display = 'flex');
+  closeAdmin.addEventListener('click', ()=> adminModal.style.display = 'none');
 
   adminUpdate.addEventListener('click', async ()=>{
     const sec = qs('#adminSecret').value.trim();
     const token = qs('#adminToken').value.trim();
     const new_status = qs('#adminStatus').value;
     const comment = qs('#adminComment').value.trim();
-    const adminResult = qs('#adminResult');
-    adminResult.textContent = '';
-    if(!sec||!token||!new_status){ adminResult.textContent = 'Fill all fields'; return; }
+    if(!sec||!token||!new_status) return qs('#adminResult').textContent = 'fill details';
     try{
-      const res = await fetch('/api/admin/update-status', { method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':sec}, body: JSON.stringify({ token, new_status, comment }) });
+      const res = await fetch('/api/admin/update-status', {
+        method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':sec}, body: JSON.stringify({ token, new_status, comment })
+      });
       const j = await res.json().catch(()=>({ error:'invalid-json' }));
-      if(res.ok && j.ok) { adminResult.textContent = 'Updated'; adminModal.classList.add('hidden'); adminModal.style.display='none'; }
-      else adminResult.textContent = 'Error: ' + (j.error || ('HTTP '+res.status));
-    }catch(err){ adminResult.textContent = 'Network error'; }
+      if(j.ok) qs('#adminResult').textContent = 'updated'; else qs('#adminResult').textContent = 'error: '+(j.error||'');
+      adminModal.style.display = 'none';
+    }catch(err){ qs('#adminResult').textContent = 'network error'; }
   });
 
 })();
