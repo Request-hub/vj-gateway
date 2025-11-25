@@ -1,32 +1,47 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Requesthub — Status</title></head>
-<body style="font-family:system-ui, Arial; padding:20px; max-width:720px;">
-<div id="out">Loading...</div>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Requesthub — Status</title>
+<style>
+  body{font-family:Inter,system-ui,Arial;background:#071428;color:#eaf3ff;padding:18px}
+  .card{max-width:760px;margin:18px auto;background:#071826;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  .token{display:inline-block;padding:6px 10px;border-radius:8px;background:#062433;color:#ffd166;font-weight:700}
+  .muted{color:#98a0b3}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Request status</h2>
+    <div id="out">Loading…</div>
+    <div style="margin-top:12px" class="muted">Enter token in URL as <code>?token=VJ-XXXX</code></div>
+  </div>
 <script>
-const token = new URLSearchParams(location.search).get('token');
-const out = document.getElementById('out');
-if (!token) out.innerText = 'No token provided.';
-else {
-  async function load(){
+(async function(){
+  const out = document.getElementById('out');
+  const token = new URLSearchParams(location.search).get('token');
+  if(!token){ out.innerHTML = '<div class="muted">No token provided.</div>'; return; }
+  try{
     const r = await fetch('/api/status?token=' + encodeURIComponent(token));
     const j = await r.json();
-    if (j.error) { out.innerText = 'Error: ' + j.error; return; }
-    out.innerHTML = `<h2>Request status</h2>
-      <b>Token:</b> ${j.token}<br>
-      <b>Name:</b> ${j.name}<br>
-      <b>Purpose:</b> ${j.purpose}<br>
-      <b>Status:</b> ${j.status}<br>
-      <b>Labels:</b> ${ (j.labels||[]).join(', ') }<br>
-      <h3>Message</h3><pre>${j.body}</pre>`;
-  }
-  load();
-  const es = new EventSource('/events');
-  es.onmessage = e => {
-    const msg = JSON.parse(e.data);
-    if ((msg.type === 'status_update' && msg.token === token) || (msg.type === 'comment' && msg.token === token)) load();
-  };
-}
+    if(j.error){ out.innerHTML = '<div class="muted">Error: '+(j.error||'unknown')+'</div>'; return; }
+    out.innerHTML = `<div><strong>Token:</strong> <span class="token">${j.token}</span></div>
+      <div><strong>Name:</strong> ${j.name}</div>
+      <div><strong>Purpose:</strong> ${j.purpose}</div>
+      <div><strong>Status:</strong> ${j.status}</div>
+      <div style="margin-top:12px"><strong>Message / Issue body</strong><pre style="white-space:pre-wrap;background:#051726;padding:10px;border-radius:8px">${j.body || ''}</pre></div>`;
+  }catch(e){ out.innerHTML = '<div class="muted">Network error</div>'; console.error(e); }
+  // SSE connect
+  try{
+    const es = new EventSource('/events');
+    es.onmessage = e => {
+      try{
+        const msg = JSON.parse(e.data);
+        if(msg.type === 'status_update' && msg.token === token){
+          out.querySelector('div:nth-child(4)').innerHTML = '<strong>Status:</strong> '+msg.new_status;
+        }
+      }catch(e){ }
+    };
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
