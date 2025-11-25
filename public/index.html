@@ -148,7 +148,6 @@
 <script>
 // Helpers
 function qs(sel){return document.querySelector(sel)}
-function qsa(sel){return Array.from(document.querySelectorAll(sel))}
 function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;","`":"&#96;"})[c]) }
 
 (function(){
@@ -159,19 +158,14 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp
   const eventsBox = qs('#eventsBox');
   const openStatus = qs('#openStatus');
 
-  function showMsg(html, kind){ result.innerHTML = '<div class="'+(kind==='ok'?'success':'error')+'">'+html+'</div>'; }
-
-  // button + spinner control
+  // spinner / submit control
   const submitBtn = qs('#submitBtn');
-  const btnText = document.getElementById('btnText') || null;
-  const btnSpinner = document.getElementById('btnSpinner') || null;
+  const btnText = document.getElementById('btnText');
+  const btnSpinner = document.getElementById('btnSpinner');
   let isSending = false;
-  function setLoading(v){
-    isSending = !!v;
-    if(submitBtn) submitBtn.disabled = !!v;
-    if(btnSpinner) btnSpinner.classList.toggle('hidden', !v);
-    if(btnText) btnText.style.opacity = v?0.6:1;
-  }
+  function setLoading(v){ isSending = !!v; if(submitBtn) submitBtn.disabled = !!v; if(btnSpinner) btnSpinner.classList.toggle('hidden', !v); if(btnText) btnText.style.opacity = v?0.6:1; }
+
+  function showMsg(html, kind){ result.innerHTML = '<div class="'+(kind==='ok'?'success':'error')+'">'+html+'</div>'; }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -190,7 +184,6 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp
     finally{ setLoading(false); }
   });
 
-  // Restore email
   try{ const saved = localStorage.getItem('rhub_email'); if(saved) qs('#email').value = saved }catch(e){}
 
   // SSE
@@ -212,20 +205,17 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp
   const adminBtn = qs('#adminBtn');
   const adminModal = qs('#adminModal');
   const closeAdmin = qs('#closeAdmin');
-  const adminUpdate = qs('#adminUpdate');
   adminBtn.addEventListener('click', ()=> adminModal.style.display = 'flex');
   closeAdmin.addEventListener('click', ()=> adminModal.style.display = 'none');
 
-  adminUpdate.addEventListener('click', async ()=>{
+  qs('#adminUpdate').addEventListener('click', async ()=>{
     const sec = qs('#adminSecret').value.trim();
     const token = qs('#adminToken').value.trim();
     const new_status = qs('#adminStatus').value;
     const comment = qs('#adminComment').value.trim();
     if(!sec||!token||!new_status) return qs('#adminResult').textContent = 'fill details';
     try{
-      const res = await fetch('/api/admin/update-status', {
-        method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':sec}, body: JSON.stringify({ token, new_status, comment })
-      });
+      const res = await fetch('/api/admin/update-status', { method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':sec}, body: JSON.stringify({ token, new_status, comment }) });
       const j = await res.json().catch(()=>({ error:'invalid-json' }));
       if(j.ok) qs('#adminResult').textContent = 'updated'; else qs('#adminResult').textContent = 'error: '+(j.error||'');
       adminModal.style.display = 'none';
