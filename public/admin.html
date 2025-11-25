@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Requesthub Admin</title>
+<style>
+  body{font-family:Inter,Arial;background:#071428;color:#eaf3ff;padding:18px}
+  .card{max-width:760px;margin:18px auto;background:#071826;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;background:#061524;border:1px solid rgba(255,255,255,0.03);color:#eaf3ff}
+  button{padding:10px 14px;border-radius:8px;background:#ffd166;border:0;color:#072029;cursor:pointer}
+  .muted{color:#98a0b3}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Admin — Update status</h2>
+    <div class="muted">Use your ADMIN_SECRET (from Render env). Do not share it.</div>
+    <input id="secret" placeholder="Admin secret">
+    <input id="token" placeholder="Token (VJ-...)">
+    <select id="status">
+      <option>status:under-review</option>
+      <option>status:team-verification</option>
+      <option>status:office-verification</option>
+      <option>status:approved</option>
+      <option>status:appointment</option>
+      <option>status:closed</option>
+    </select>
+    <input id="comment" placeholder="Comment (optional)">
+    <div style="display:flex;gap:8px">
+      <button id="send">Update</button>
+      <div id="out" class="muted"></div>
+    </div>
+  </div>
+
+<script>
+document.getElementById('send').addEventListener('click', async ()=>{
+  const secret = document.getElementById('secret').value.trim();
+  const token = document.getElementById('token').value.trim();
+  const new_status = document.getElementById('status').value;
+  const comment = document.getElementById('comment').value.trim();
+  const out = document.getElementById('out');
+  out.textContent = '';
+  if(!secret||!token||!new_status){ out.textContent = 'fill fields'; return; }
+  try{
+    const r = await fetch('/api/admin/update-status', { method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':secret}, body: JSON.stringify({ token, new_status, comment })});
+    const j = await r.json();
+    if(j.ok) out.textContent = 'Updated'; else out.textContent = 'Error: '+(j.error||'');
+  }catch(e){ out.textContent = 'Network error'; console.error(e); }
+});
+</script>
+</body>
+</html>
