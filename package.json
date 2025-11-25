@@ -1,7 +1,7 @@
 {
   "name": "vj-gateway",
   "version": "1.0.0",
-  "description": "Requesthub - VJ Gateway (Brevo transactional emails)",
+  "description": "Requesthub - VJ Gateway (Brevo + GitHub Issues)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
