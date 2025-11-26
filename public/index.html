@@ -3,11 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="robots" content="noindex">
-  <title>Requesthub — Send Request</title>
+  <title>Requesthub — Premium Request & Appointment Gateway</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <meta name="description" content="Requesthub — send tracked requests, get a token, follow status. Built with Brevo + GitHub Issues." />
+  <meta name="description" content="Requesthub — premium request & appointment gateway with email token and live status tracking." />
   <style>
     :root{
       --bg:#071425;--card:#0b1220;--muted:#98a0b3;--accent:#ffd166;--accent-2:#06b6d4;--glass:rgba(255,255,255,0.03);--success:#16a34a;
@@ -35,65 +34,98 @@
     .small{font-size:13px;color:var(--muted)}
     .links a{color:var(--accent);text-decoration:none;font-weight:600}
     .admin-button{background:#112233;color:#dfefff;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-    .center{display:flex;align-items:center;justify-content:center}
     .hidden{display:none}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.2);font-size:11px;color:var(--muted)}
+    .badge-dot{width:8px;height:8px;border-radius:999px;background:#22c55e;box-shadow:0 0 4px rgba(34,197,94,0.8)}
+    .lang-select{background:#020617;border-radius:999px;padding:4px 10px;border:1px solid rgba(148,163,184,0.2);color:#e5e7eb;font-size:12px}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(148,163,184,0.4);font-size:11px;color:#cbd5f5;margin-left:6px}
     .spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);border-top-color:var(--accent);animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div class="wrap">
+  <!-- Top bar -->
   <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px">
     <div class="brand">
       <div class="logo" aria-hidden>RH</div>
       <div>
-        <h1>Requesthub</h1>
-        <div class="small">Premium request & appointment gateway</div>
+        <h1 data-i18n="title">Requesthub</h1>
+        <div class="small" data-i18n="subtitle">Premium request & appointment gateway</div>
       </div>
     </div>
-    <div style="text-align:right">
-      <div class="small">Service</div>
-      <div style="font-weight:700;color:var(--accent)">vj-gateway</div>
+    <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span data-i18n="badge_fastlane">Fast-lane access, by request only.</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="small">vj-gateway</div>
+        <select id="langSwitcher" class="lang-select">
+          <option value="en">EN</option>
+          <option value="ml">മലയാളം</option>
+        </select>
+      </div>
     </div>
   </div>
 
   <div class="grid">
+    <!-- Request form -->
     <section class="panel" id="mainPanel" aria-labelledby="send-heading">
-      <h2 id="send-heading" style="margin:0">Send a Request</h2>
-      <p class="lead">Fill the form and you'll receive a secure token by email to track the request.</p>
+      <h2 id="send-heading" style="margin:0" data-i18n="send_heading">Send a Request</h2>
+      <p class="lead" data-i18n="lead">Fill the form and you'll receive a secure token by email to track the request.</p>
 
       <form id="requestForm" novalidate>
-        <div class="row"><label class="hidden" for="name">Full name</label><input id="name" name="name" type="text" placeholder="Full name" required autocomplete="name"></div>
-        <div class="row"><label class="hidden" for="email">Email</label><input id="email" name="email" type="email" placeholder="Email (used to send token)" required autocomplete="email"></div>
-        <div class="row"><label class="hidden" for="purpose">Purpose</label><select id="purpose" name="purpose" required><option value="Question">Question</option><option value="Appointment">Appointment</option><option value="Chat request">Chat request</option><option value="Other">Other</option></select></div>
-        <div class="row"><label class="hidden" for="referral">Referral</label><input id="referral" name="referral" type="text" placeholder="Referral code (optional)"></div>
-        <div class="row"><label class="hidden" for="message">Message</label><textarea id="message" name="message" placeholder="Write your message" required></textarea></div>
+        <div class="row">
+          <input id="name" name="name" type="text" data-i18n-placeholder="name_placeholder" placeholder="Full name" required>
+        </div>
+        <div class="row">
+          <input id="email" name="email" type="email" data-i18n-placeholder="email_placeholder" placeholder="Email (used to send token)" required>
+        </div>
+        <div class="row">
+          <select id="purpose" name="purpose" required>
+            <option value="Question" data-i18n="purpose_question">Question</option>
+            <option value="Appointment" data-i18n="purpose_appointment">Appointment</option>
+            <option value="Chat request" data-i18n="purpose_chat">Chat request</option>
+            <option value="Other" data-i18n="purpose_other">Other</option>
+          </select>
+        </div>
+        <div class="row">
+          <input id="referral" name="referral" type="text" data-i18n-placeholder="referral_placeholder" placeholder="Referral code (optional)">
+        </div>
+        <div class="row">
+          <textarea id="message" name="message" data-i18n-placeholder="message_placeholder" placeholder="Write your message" required></textarea>
+        </div>
         <div style="display:flex;gap:12px;align-items:center">
-          <button id="submitBtn" class="btn" type="submit"><span id="btnText">Send Request</span><span id="btnSpinner" class="spinner hidden" aria-hidden></span></button>
-          <div class="muted">We will email your token & tracking link.</div>
+          <button class="btn" id="submitBtn" type="submit">
+            <span id="btnText" data-i18n="btn_send">Send Request</span>
+            <span id="btnSpinner" class="spinner hidden" aria-hidden="true"></span>
+          </button>
+          <div class="muted" data-i18n="helper_text">We will email your token & tracking link.</div>
         </div>
       </form>
 
       <div id="result" style="margin-top:16px" aria-live="polite"></div>
 
       <div style="margin-top:16px" class="info">
-        <strong>Pro tips:</strong>
+        <strong data-i18n="protips_title">Pro tips:</strong>
         <ul style="margin:8px 0 0 16px;padding:0;color:var(--muted);line-height:1.5">
-          <li>Use a real email to receive the token instantly.</li>
-          <li>Referral codes give priority if valid.</li>
-          <li>Open the token link to view live updates.</li>
+          <li data-i18n="protip_1">Use a real email to receive the token instantly.</li>
+          <li data-i18n="protip_2">Referral codes give priority if valid.</li>
+          <li data-i18n="protip_3">Open the token link to view live updates.</li>
         </ul>
       </div>
     </section>
 
+    <!-- Status / live activity -->
     <aside class="panel" aria-labelledby="status-heading">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div class="small">Status</div>
-          <h3 id="status-heading" style="margin:6px 0 0 0">Quick tracker</h3>
+          <div class="small" data-i18n="status_panel_label">Status</div>
+          <h3 id="status-heading" style="margin:6px 0 0 0" data-i18n="status_panel_title">Quick tracker</h3>
         </div>
         <div style="text-align:right">
-          <div class="small">Live</div>
+          <div class="small" data-i18n="status_panel_live">Live</div>
           <div style="font-weight:700;color:var(--accent)">SSE</div>
         </div>
       </div>
@@ -101,125 +133,320 @@
       <div style="margin-top:14px" class="info" role="status">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div class="small">Last token</div>
+            <div class="small" data-i18n="last_token_label">Last token</div>
             <div id="lastToken" class="token">—</div>
           </div>
           <div style="text-align:right">
-            <div class="small">Status</div>
+            <div class="small" data-i18n="status_label">Status</div>
             <div id="lastStatus" class="small muted">—</div>
           </div>
         </div>
         <div class="links" style="margin-top:12px">
-          <a id="openStatus" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open status page</a>
-          <button id="adminBtn" class="admin-button" aria-haspopup="dialog">Admin panel</button>
+          <a id="openStatus" href="#" target="_blank" style="display:none" data-i18n="open_status_link">Open status page</a>
+          <button id="adminBtn" class="admin-button" data-i18n="admin_panel_btn">Admin panel</button>
+          <span class="pill" data-i18n="referral_badge">Referral gives 1 step ahead</span>
         </div>
       </div>
 
       <div style="margin-top:16px">
-        <h4 style="margin:0 0 8px 0">Recent events</h4>
-        <div id="eventsBox" class="small muted">No events yet — submit a request to start.</div>
+        <h4 style="margin:0 0 8px 0" data-i18n="recent_events_title">Recent events</h4>
+        <div id="eventsBox" class="small muted" data-i18n="recent_events_empty">No events yet — submit a request to start.</div>
       </div>
 
       <footer>
-        Requesthub • Brevo + GitHub Issues
+        <span data-i18n="footer_text">Requesthub • Built for high-value, invite-only access.</span>
       </footer>
     </aside>
   </div>
 </div>
 
-<!-- Admin modal (simple) -->
-<div id="adminModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="admin-heading" style="position:fixed;inset:0;background:rgba(2,6,23,0.6);align-items:center;justify-content:center;padding:20px">
+<!-- Admin modal -->
+<div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.6);align-items:center;justify-content:center;padding:20px">
   <div style="max-width:720px;width:100%;background:#071026;padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <h3 id="admin-heading" style="margin:0">Admin — Update status</h3>
-      <button id="closeAdmin" class="admin-button">Close</button>
+      <h3 style="margin:0" data-i18n="admin_title">Admin — Update status</h3>
+      <button id="closeAdmin" class="admin-button" data-i18n="admin_close_btn">Close</button>
     </div>
-    <p class="small">Enter the admin secret (kept in Render) to update status.</p>
+    <p class="small" data-i18n="admin_desc">Enter the admin secret (kept in Render) to update status.</p>
     <div style="display:grid;gap:8px">
-      <input id="adminSecret" placeholder="Admin secret" autocomplete="off" />
-      <input id="adminToken" placeholder="Request token (VJ-...)" />
-      <select id="adminStatus"><option>status:under-review</option><option>status:team-verification</option><option>status:office-verification</option><option>status:approved</option><option>status:appointment</option><option>status:closed</option></select>
-      <input id="adminComment" placeholder="Comment (optional)" />
-      <div style="display:flex;gap:8px"><button id="adminUpdate" class="btn">Update</button><div id="adminResult" class="small muted"></div></div>
+      <input id="adminSecret" data-i18n-placeholder="admin_secret_placeholder" placeholder="Admin secret" />
+      <input id="adminToken" data-i18n-placeholder="admin_token_placeholder" placeholder="Request token (VJ-...)" />
+      <select id="adminStatus">
+        <option>status:under-review</option>
+        <option>status:team-verification</option>
+        <option>status:office-verification</option>
+        <option>status:approved</option>
+        <option>status:appointment</option>
+        <option>status:closed</option>
+      </select>
+      <input id="adminComment" data-i18n-placeholder="admin_comment_placeholder" placeholder="Comment (optional)" />
+      <div style="display:flex;gap:8px">
+        <button id="adminUpdate" class="btn" type="button" data-i18n="admin_update_btn">Update</button>
+        <div id="adminResult" class="small muted"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// Helpers
-function qs(sel){return document.querySelector(sel)}
-function escapeHtml(s){ return String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;","`":"&#96;"})[c]) }
+// small helpers
+const $ = (id) => document.getElementById(id);
+const escapeHtml = (s) => String(s||'').replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;','`':'&#96;'}[c]));
+
+// translations
+const translations = {
+  en: {
+    title: "Requesthub",
+    subtitle: "Premium request & appointment gateway",
+    badge_fastlane: "Fast-lane access, by request only.",
+    send_heading: "Send a Request",
+    lead: "Fill the form and you'll receive a secure token by email to track the request.",
+    name_placeholder: "Full name",
+    email_placeholder: "Email (used to send token)",
+    purpose_question: "Question",
+    purpose_appointment: "Appointment",
+    purpose_chat: "Chat request",
+    purpose_other: "Other",
+    referral_placeholder: "Referral code (optional)",
+    message_placeholder: "Write your message",
+    btn_send: "Send Request",
+    helper_text: "We will email your token & tracking link.",
+    protips_title: "Pro tips:",
+    protip_1: "Use a real email to receive the token instantly.",
+    protip_2: "Referral codes give priority if valid.",
+    protip_3: "Open the token link to view live updates.",
+    status_panel_label: "Status",
+    status_panel_title: "Quick tracker",
+    status_panel_live: "Live",
+    last_token_label: "Last token",
+    status_label: "Status",
+    open_status_link: "Open status page",
+    admin_panel_btn: "Admin panel",
+    referral_badge: "Referral gives 1 step ahead",
+    recent_events_title: "Recent events",
+    recent_events_empty: "No events yet — submit a request to start.",
+    footer_text: "Requesthub • Built for high-value, invite-only access.",
+    admin_title: "Admin — Update status",
+    admin_close_btn: "Close",
+    admin_desc: "Enter the admin secret (kept in Render) to update status.",
+    admin_secret_placeholder: "Admin secret",
+    admin_token_placeholder: "Request token (VJ-...)",
+    admin_comment_placeholder: "Comment (optional)",
+    admin_update_btn: "Update",
+    err_missing: "Please fill all required fields",
+    err_email: "Enter a valid email address",
+    err_network: "Network or server error. Check logs.",
+    err_generic: "Error:",
+    admin_fill_fields: "Fill details",
+    admin_updated: "Updated",
+    admin_network_error: "Network error"
+  },
+  ml: {
+    title: "Requesthub",
+    subtitle: "പ്രീമിയം അഭ്യർഥന & അപ്പോയിന്റ്‌മെൻറ് ഗേറ്റ്‌വേ",
+    badge_fastlane: "പ്രത്യേക അഭ്യർഥനകൾക്ക് ഫാസ്റ്റ്-ലൈൻ ആക്സസ്.",
+    send_heading: "അഭ്യർഥന അയയ്ക്കുക",
+    lead: "ഫോം പൂരിപ്പിച്ചാൽ നിങ്ങളുടെ ഇമെയിലിലേക്ക് ഒരു ടോക്കൺ വരും. അതിലൂടെ സ്റ്റാറ്റസ് ട്രാക്ക് ചെയ്യാം.",
+    name_placeholder: "പേര്",
+    email_placeholder: "ഇമെയിൽ (ടോക്കൺ ലഭിക്കാൻ)",
+    purpose_question: "ചോദ്യം",
+    purpose_appointment: "അപ്പോയിന്റ്‌മെന്റ്",
+    purpose_chat: "ചാറ്റ് അഭ്യർഥന",
+    purpose_other: "മറ്റുള്ളത്",
+    referral_placeholder: "റഫറൽ കോഡ് (ഓപ്ഷണൽ)",
+    message_placeholder: "നിങ്ങളുടെ സന്ദേശം എഴുതുക",
+    btn_send: "അയയ്ക്കുക",
+    helper_text: "ടോക്കൺ & ട്രാക്കിംഗ് ലിങ്ക് ഇമെയിൽ വഴി വരും.",
+    protips_title: "സൂചനകൾ:",
+    protip_1: "ഓഫീഷ്യൽ, ശരിയായ ഇമെയിൽ ഉപയോഗിക്കുക.",
+    protip_2: "വാലിഡ് റഫറൽ കോഡിന് അധിക പ്രാധാന്യം ലഭിക്കും.",
+    protip_3: "ടോക്കൺ ലിങ്ക് തുറന്ന് ലൈവ് സ്റ്റാറ്റസ് കാണാം.",
+    status_panel_label: "സ്റ്റാറ്റസ്",
+    status_panel_title: "ഫാസ്റ്റ് ട്രാക്കർ",
+    status_panel_live: "ലൈവ്",
+    last_token_label: "അവസാന ടോക്കൺ",
+    status_label: "സ്റ്റാറ്റസ്",
+    open_status_link: "സ്റ്റാറ്റസ് പേജ് തുറക്കുക",
+    admin_panel_btn: "അഡ്മിൻ പാനൽ",
+    referral_badge: "റഫറൽ ഉള്ളവർക്ക് ഒരു പടി മുന്നിൽ",
+    recent_events_title: "സമീപകാല ഇവന്റുകൾ",
+    recent_events_empty: "ഇതുവരെ ഇവന്റുകളൊന്നുമില്ല — ആദ്യം ഒരു അഭ്യർഥന അയയ്ക്കൂ.",
+    footer_text: "Requesthub • ഉയർന്ന മൂല്യമുള്ള, invite-only ആക്സസിനായി.",
+    admin_title: "അഡ്മിൻ — സ്റ്റാറ്റസ് മാറ്റം",
+    admin_close_btn: "Close",
+    admin_desc: "Render-ലുള്ള Admin secret ഉപയോഗിച്ചാല്‍ മാത്രം സ്റ്റാറ്റസ് അപ്‌ഡേറ്റ് ചെയ്യാം.",
+    admin_secret_placeholder: "Admin secret",
+    admin_token_placeholder: "Request token (VJ-...)",
+    admin_comment_placeholder: "കമന്റ് (ഓപ്ഷണൽ)",
+    admin_update_btn: "Update",
+    err_missing: "എല്ലാ ആവശ്യമായ ഫീൽഡുകളും പൂരിപ്പിക്കുക.",
+    err_email: "വാലിഡ് ഇമെയിൽ ടൈപ്പ് ചെയ്യുക.",
+    err_network: "നെറ്റ്‌വർക്ക് അല്ലെങ്കിൽ സെർവർ പിശക്. Logs പരിശോധിക്കുക.",
+    err_generic: "പിശക്:",
+    admin_fill_fields: "ഫീൽഡുകൾ പൂരിപ്പിക്കുക",
+    admin_updated: "അപ്‌ഡേറ്റായി",
+    admin_network_error: "നെറ്റ്‌വർക്ക് പിശക്"
+  }
+};
 
 (function(){
-  const form = qs('#requestForm');
-  const result = qs('#result');
-  const lastToken = qs('#lastToken');
-  const lastStatus = qs('#lastStatus');
-  const eventsBox = qs('#eventsBox');
-  const openStatus = qs('#openStatus');
-
-  // spinner / submit control
-  const submitBtn = qs('#submitBtn');
+  const form = document.getElementById('requestForm');
+  const result = document.getElementById('result');
+  const lastToken = document.getElementById('lastToken');
+  const lastStatus = document.getElementById('lastStatus');
+  const eventsBox = document.getElementById('eventsBox');
+  const openStatus = document.getElementById('openStatus');
+  const submitBtn = document.getElementById('submitBtn');
   const btnText = document.getElementById('btnText');
   const btnSpinner = document.getElementById('btnSpinner');
-  let isSending = false;
-  function setLoading(v){ isSending = !!v; if(submitBtn) submitBtn.disabled = !!v; if(btnSpinner) btnSpinner.classList.toggle('hidden', !v); if(btnText) btnText.style.opacity = v?0.6:1; }
+  const langSwitcher = document.getElementById('langSwitcher');
 
-  function showMsg(html, kind){ result.innerHTML = '<div class="'+(kind==='ok'?'success':'error')+'">'+html+'</div>'; }
+  let currentLang = 'en';
+  let isSending = false;
+
+  function setLoading(v){
+    isSending = !!v;
+    submitBtn.disabled = !!v;
+    btnSpinner.classList.toggle('hidden', !v);
+    btnText.style.opacity = v ? 0.6 : 1;
+  }
+
+  function showMsg(html, kind){
+    result.innerHTML = '<div class="'+(kind==='ok'?'success':'error')+'">'+html+'</div>';
+  }
+
+  function applyTranslations(lang){
+    const dict = translations[lang] || translations.en;
+    currentLang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n');
+      if(dict[key]) el.textContent = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-placeholder');
+      if(dict[key]) el.placeholder = dict[key];
+    });
+  }
+
+  langSwitcher.addEventListener('change', ()=>{
+    applyTranslations(langSwitcher.value);
+  });
+  // initial
+  applyTranslations('en');
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     if(isSending) return;
     result.innerHTML = '';
-    const data = { name: form.name.value.trim(), email: form.email.value.trim(), purpose: form.purpose.value, message: form.message.value.trim(), referral: form.referral.value.trim() || undefined };
-    if(!data.name||!data.email||!data.purpose||!data.message){ showMsg('Please fill all required fields','err'); return; }
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)){ showMsg('Enter a valid email address','err'); return; }
+    const data = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      purpose: form.purpose.value,
+      message: form.message.value.trim(),
+      referral: form.referral.value.trim() || undefined
+    };
+    const dict = translations[currentLang];
+
+    if(!data.name || !data.email || !data.purpose || !data.message){
+      showMsg(dict.err_missing || 'Please fill all required fields','err');
+      return;
+    }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)){
+      showMsg(dict.err_email || 'Enter a valid email address','err');
+      return;
+    }
+
     try{
       setLoading(true);
-      const res = await fetch('/api/request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      const res = await fetch('/api/request', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
       const j = await res.json().catch(()=>({ error:'invalid-json-response' }));
-      if(res.ok && j.ok){ showMsg('<strong>Request created</strong><br/>Token: <span class="token">'+escapeHtml(j.token)+'</span>','ok'); lastToken.textContent = j.token; lastStatus.textContent = 'received'; openStatus.href = j.statusUrl; openStatus.style.display = 'inline-block'; result.scrollIntoView({behavior:'smooth',block:'center'}); try{ localStorage.setItem('rhub_email', data.email) }catch(e){}; form.reset(); }
-      else showMsg('Error: '+escapeHtml(j.error||('HTTP '+res.status)),'err');
-    }catch(err){ console.error(err); showMsg('Network or server error. Check logs.','err'); }
-    finally{ setLoading(false); }
+      if(res.ok && j.ok){
+        const tokenHtml = escapeHtml(j.token);
+        showMsg('<strong>Request created</strong><br/>Token: <span class="token">'+tokenHtml+'</span>','ok');
+        lastToken.textContent = j.token;
+        lastStatus.textContent = 'received';
+        openStatus.href = j.statusUrl;
+        openStatus.style.display = 'inline-block';
+        try{ localStorage.setItem('rhub_email', data.email); }catch(e){}
+        form.reset();
+      } else {
+        const msg = (j && j.error) ? j.error : ('HTTP '+res.status);
+        showMsg((dict.err_generic || 'Error:') + ' ' + escapeHtml(msg),'err');
+      }
+    }catch(err){
+      console.error(err);
+      showMsg(translations[currentLang].err_network || translations.en.err_network,'err');
+    }finally{
+      setLoading(false);
+    }
   });
 
-  try{ const saved = localStorage.getItem('rhub_email'); if(saved) qs('#email').value = saved }catch(e){}
+  // restore email
+  try{
+    const saved = localStorage.getItem('rhub_email');
+    if(saved) document.getElementById('email').value = saved;
+  }catch(e){}
 
-  // SSE
+  // SSE events
   try{
     const evt = new EventSource('/events');
     evt.onmessage = e => {
       try{
         const msg = JSON.parse(e.data);
         const time = new Date().toLocaleTimeString();
-        eventsBox.innerHTML = time + ' — ' + escapeHtml(msg.type + (msg.token?(' • '+msg.token):'')) + '<br/>' + eventsBox.innerHTML;
-        if(msg.type === 'status_update' && lastToken.textContent && msg.token === lastToken.textContent){ lastStatus.textContent = msg.new_status || 'updated'; }
-        if(msg.type === 'comment' && msg.comment){ eventsBox.innerHTML = '<b>Comment:</b> '+escapeHtml(msg.comment.user)+': '+escapeHtml(msg.comment.body)+'<br/>'+eventsBox.innerHTML; }
+        eventsBox.innerHTML = time + ' — ' + escapeHtml(msg.type + (msg.token ? (' • ' + msg.token) : '')) + '<br/>' + eventsBox.innerHTML;
+        if(msg.type === 'status_update' && lastToken.textContent && msg.token === lastToken.textContent){
+          lastStatus.textContent = msg.new_status || 'updated';
+        }
+        if(msg.type === 'comment' && msg.comment){
+          eventsBox.innerHTML = '<b>Comment:</b> '+escapeHtml(msg.comment.user)+': '+escapeHtml(msg.comment.body)+'<br/>' + eventsBox.innerHTML;
+        }
       }catch(e){ console.warn('SSE parse', e); }
     };
-    evt.onerror = (err)=>{ console.warn('SSE error', err); }
+    evt.onerror = (err)=>{ console.warn('SSE error', err); };
   }catch(e){ console.warn('SSE not supported', e); }
 
   // Admin modal
-  const adminBtn = qs('#adminBtn');
-  const adminModal = qs('#adminModal');
-  const closeAdmin = qs('#closeAdmin');
+  const adminBtn = document.getElementById('adminBtn');
+  const adminModal = document.getElementById('adminModal');
+  const closeAdmin = document.getElementById('closeAdmin');
+  const adminUpdate = document.getElementById('adminUpdate');
+  const adminResult = document.getElementById('adminResult');
+
   adminBtn.addEventListener('click', ()=> adminModal.style.display = 'flex');
   closeAdmin.addEventListener('click', ()=> adminModal.style.display = 'none');
 
-  qs('#adminUpdate').addEventListener('click', async ()=>{
-    const sec = qs('#adminSecret').value.trim();
-    const token = qs('#adminToken').value.trim();
-    const new_status = qs('#adminStatus').value;
-    const comment = qs('#adminComment').value.trim();
-    if(!sec||!token||!new_status) return qs('#adminResult').textContent = 'fill details';
+  adminUpdate.addEventListener('click', async ()=>{
+    const dict = translations[currentLang];
+    const sec = document.getElementById('adminSecret').value.trim();
+    const token = document.getElementById('adminToken').value.trim();
+    const new_status = document.getElementById('adminStatus').value;
+    const comment = document.getElementById('adminComment').value.trim();
+    adminResult.textContent = '';
+    if(!sec || !token || !new_status){
+      adminResult.textContent = dict.admin_fill_fields || 'fill details';
+      return;
+    }
     try{
-      const res = await fetch('/api/admin/update-status', { method:'POST', headers:{'Content-Type':'application/json','x-admin-secret':sec}, body: JSON.stringify({ token, new_status, comment }) });
+      const res = await fetch('/api/admin/update-status', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-admin-secret':sec},
+        body: JSON.stringify({ token, new_status, comment })
+      });
       const j = await res.json().catch(()=>({ error:'invalid-json' }));
-      if(j.ok) qs('#adminResult').textContent = 'updated'; else qs('#adminResult').textContent = 'error: '+(j.error||'');
-      adminModal.style.display = 'none';
-    }catch(err){ qs('#adminResult').textContent = 'network error'; }
+      if(j.ok){
+        adminResult.textContent = dict.admin_updated || 'updated';
+        adminModal.style.display = 'none';
+      } else {
+        adminResult.textContent = (dict.err_generic || 'Error:') + ' ' + (j.error || '');
+      }
+    }catch(err){
+      adminResult.textContent = dict.admin_network_error || 'network error';
+    }
   });
 
 })();
